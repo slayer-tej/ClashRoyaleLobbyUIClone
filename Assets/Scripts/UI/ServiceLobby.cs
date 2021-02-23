@@ -1,18 +1,37 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+
+public enum Tab
+{
+    None,
+    Battle,
+    Cards,
+    Clan,
+    Store,
+    Tournament
+}
 
 public class ServiceLobby : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public event Action<Tab> OnSelectionChanged;
+
+    [SerializeField]
+    private Tab selectedTab = Tab.None;
+
+    private void Start()
     {
-        
+        ChangeTab(Tab.Battle);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void ChangeTab(Tab tab)
     {
-        
+        if(tab != selectedTab)
+        {
+            Debug.Log("Changing Tab from " + selectedTab + " to " + tab);
+            selectedTab = tab;
+            OnSelectionChanged?.Invoke(selectedTab);
+        }
     }
 }
