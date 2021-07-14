@@ -45,6 +45,14 @@ public class ServiceChestSystem: MonoSingletonGeneric<ServiceChestSystem>
         }
     }
 
+    public void ReleaseAll()
+    {
+        for(int i = 0; i < chestsList.Count; i++)
+        {
+            chestsList[i].UnHold();
+        }
+    }
+
     internal void EndUnlocking(ControllerChest controller)
     {
         for(int i = 0; i < chestsList.Count; i++)
@@ -52,20 +60,8 @@ public class ServiceChestSystem: MonoSingletonGeneric<ServiceChestSystem>
             if(chestsList[i].GetInstanceID() == controller.GetInstanceID())
             {
                 chestsList[i].ReleaseSlot();
-                chestsList[i + 1].UnHold();
             }
         }
-        //foreach(ControllerChest chest in chestsList)
-        //{
-        //    if(chest.GetInstanceID() == controller.GetInstanceID())
-        //    {
-        //        chest.Hold();
-        //    }
-        //    else
-        //    {
-        //        chest.UnHold();
-        //    }
-        //}
     }
 
     public void UpdateUI()
@@ -78,7 +74,8 @@ public class ServiceChestSystem: MonoSingletonGeneric<ServiceChestSystem>
     {
         Chest Randomchest = new Chest(randomChest);
         Debug.Log("ChestType: " + Randomchest.Type + " Coins: " + Randomchest.coins + " Gems: " + Randomchest.gems);
-        GameObject Loot =  Instantiate(_chestPrefab,gameObject.transform);
+        GameObject Loot = ServicePool.Instance.GetItem();
+        Loot.SetActive(true);
         ControllerChest controllerChest = Loot.GetComponent<ControllerChest>();
         controllerChest.InitializeValues(Randomchest);
         chestsList.Add(controllerChest);

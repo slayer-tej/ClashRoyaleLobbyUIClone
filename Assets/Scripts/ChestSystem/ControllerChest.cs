@@ -31,6 +31,12 @@ public class ControllerChest : MonoBehaviour
         ServiceChestSystem.Instance.OnSelectionChanged += onTabSelectionChange;
     }
 
+    private void OnEnable()
+    {
+        ResetChest();
+        UpdateStatus();
+    }
+
     private void Start()
     {
         remainingTime = timetoOpen;
@@ -47,15 +53,19 @@ public class ControllerChest : MonoBehaviour
         if (islocked && !isUnlocking)
         {
             statusField.text = "Locked";
+
         }
         else if (!islocked && !isUnlocking)
         {
             statusField.text = "Unlocked";
         }
+        else if(islocked && isUnlocking)
+        {
+            statusField.text = "Unlocking";
+        }
         else if(!islocked && isCollected)
         {
             Debug.Log("Collected");
-            statusField.text = "Collected";
         }
     }
 
@@ -92,6 +102,8 @@ public class ControllerChest : MonoBehaviour
         coins = random.coins;
         gems = random.gems;
         timetoOpen = random.timetoOpen;
+        islocked = true;
+        ResetChest();
     }
 
     private void StartUnlock()
@@ -114,12 +126,13 @@ public class ControllerChest : MonoBehaviour
             {
                 _buttonStartUnlocking.interactable = false;
             }
+            
         }
         else if (!islocked && !isCollected)
         {
-            UpdateStatus();
             UnlockChest();
         }
+        UpdateStatus();
     }
 
     private void UnlockChest()
@@ -133,13 +146,16 @@ public class ControllerChest : MonoBehaviour
 
     IEnumerator Countdown()
     {
+
         while (remainingTime > 0 && islocked)
         {
             inputField.text = remainingTime.ToString();
             yield return new WaitForSeconds(1);
             remainingTime--;
         }
+        inputField.text = "";
         Unlock();
+        ServiceChestSystem.Instance.ReleaseAll();
         UpdateStatus();
     }
 
@@ -165,13 +181,13 @@ public class ControllerChest : MonoBehaviour
     internal void UnHold()
     {
         _buttonChest.interactable = true;
-        StartUnlock();
     }
 
     public void ReleaseSlot()
     {
         ServiceChestSystem.Instance._numOfSlots++;
-        Destroy(gameObject);
+        gameObject.SetActive(false);
+        ServicePool.Instance.ReturnItem(this.gameObject);
     }
     public void Unlock()
     {
@@ -179,6 +195,12 @@ public class ControllerChest : MonoBehaviour
         isUnlocking = false;
     }
 
+    public void ResetChest()
+    {
+        islocked = true;
+        isUnlocking = false;
+        isCollected = false;
+    }
     public void Open(bool status)
     {
         isCollected = status;
